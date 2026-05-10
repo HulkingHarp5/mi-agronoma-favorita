@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSA - Gestión Modular Fer</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2d6a4f">
+    <link rel="apple-touch-icon" href="1000373006.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --secondary: #52b788;
+            --accent: #d8f3dc;
+            --bg: #f8fcf9;
+            --text: #1b4332;
+            --card-bg: #ffffff;
+            --warning: #fff9e6;
+        }
+
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0 10px 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+        }
+
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid var(--secondary);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 600;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--secondary);
+        }
+
+        .collapsible-card {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .collapsible-card:active { background: #f0fdf4; }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+        .collapsible-content.open {
+            max-height: 4000px; 
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .week-header h3 { margin: 0; font-size: 1.1em; }
+        .week-badge {
+            background: var(--accent);
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .percentage-badge {
+            background: #ffc107;
+            color: #664d03;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .task-list { list-style: none; padding: 0; margin: 0; }
+        .task-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .inner-accordion {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .inner-header {
+            padding: 10px 15px;
+            background: #f0f8f3;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .inner-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 15px;
+            font-size: 0.85em;
+            color: #444;
+            line-height: 1.5;
+        }
+        .inner-content.open {
+            max-height: 1500px; 
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .progress-container { background: #eee; border-radius: 10px; height: 12px; margin: 10px 0; }
+        .progress-bar { background: var(--secondary); height: 100%; border-radius: 10px; width: 0%; }
+        .dogs-footer { text-align: center; padding: 20px; font-size: 0.9em; background: #e9f5ee; margin-top: 20px; }
+        .info-box { background: var(--warning); border-left: 4px solid #ffc107; padding: 10px 15px; border-radius: 8px; font-size: 0.85em; margin-bottom: 15px; color: #664d03; }
+        .numbered-list { padding-left: 20px; font-size: 0.9em; line-height: 1.6; }
+        .arrow { font-size: 0.8em; transition: transform 0.3s; }
+        .arrow.rotated { transform: rotate(180deg); }
+        .eval-accordion { background: #fafafa; border: 1px solid #eaeaea; border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        
+        .full-text-list {
+            padding-left: 15px;
+            margin: 0;
+        }
+        .full-text-list li {
+            margin-bottom: 8px;
+        }
+
+        .title-image {
+            width: 4em;
+            height: 4em;
+            margin-right: 12px;
+            border-radius: 12px; 
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><img src="1000373006.jpg" alt="Perrito granjero" class="title-image"> SSA: Mi Trimestre</h1>
+    <p>Guía de Operación 2026-P</p>
+</header>
+
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="openTab('semanas')">🗓️ Agenda</button>
+    <button class="tab-btn" onclick="openTab('evaluacion')">📊 Evaluación</button>
+    <button class="tab-btn" onclick="openTab('investigacion')">🔬 Investigación</button>
+    <button class="tab-btn" onclick="openTab('objetivos')">🎯 Metas</button>
+</div>
+
+<div class="container">
+    
+    <div id="semanas" class="tab-content active">
+        <div class="card" style="border: 2px solid var(--secondary);">
+            <span class="week-badge">Horario Semanal Base</span>
+            <p style="font-size: 1.1em; margin: 5px 0; line-height: 1.8;">
+               📍 <b>Lun/Mar/Jue:</b> <a href="https://maps.app.goo.gl/4d6pQrWAcnboC5NR9?g_st=ac" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: none;">Las Ánimas 🗺️</a><br><br>
+               🏫 <b>Miércoles:</b> <a href="https://maps.app.goo.gl/m2xnZtxQn3qmHD158?g_st=ac" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: none;">UAM Xochimilco 📍</a><br><br>
+               🚜 <b>Viernes:</b> Visita con productor
+            </p>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w1', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 1 (6-8 May) | Pablo/Luis</span>
+                    <h3>🌱 Introducción y Diagnóstico</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w1" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w1-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w1-obj" class="inner-content">Que el alumno comience a caracterizar problemáticas en torno a la sustentabilidad en la agricultura y el módulo.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w1-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w1-cont" class="inner-content">Introducción al módulo y la operación didáctica del mismo.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w1-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w1-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Investigación documental analítica respecto a la conceptualización de sistemas agrícolas y metodologías de evaluación; revisión de los materiales del módulo (Objeto de transformación, problemas eje, objetivos, alcances y limitaciones. El módulo dentro del contexto de la licenciatura. Contenidos del módulo). PABLO (6 y 7 de mayo).</li>
+                            <li>Trabajo de campo en Ánimas: Práctica de campo en la parcela agroecológica del predio Las Ánimas: La agricultura como actividad transformadora del mundo. LUIS.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w1-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w1-eval" class="inner-content">
+                        <b>Entregable:</b> Reporte de opinión integral de lecturas (Individual).<br>
+                        <b>Material:</b> Plan y programa de estudios de la licenciatura de Agronomía, UAM-X; Torres et al., 2012; Nicklay, J. et al. 2023; Kareemulla, K., et al. 2017; Torres Lima et al., 2025; Makau, S. et al. 2024.
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w1-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w1-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://cbstmp.xoc.uam.mx/archivos/programas_de_estudios_agronomia_23-O.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Programa de estudios Agronomía</a></li>
+                                    <li><a href="https://repositorio.xoc.uam.mx/jspui/handle/123456789/24769?offset=20" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Repositorio UAM 1</a></li>
+                                    <li><a href="https://www.cursosycarreras.com.mx/licenciatura-en-agronomia-distrito-federal-coyoacan-uam-FO-240034" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Cursos y Carreras UAM</a></li>
+                                    <li><a href="https://ulibros.com/agronomia-e-investigacion-d70rj.html" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Agronomía e investigación</a></li>
+                                    <li><a href="https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2023.770862/full" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Artículo Frontiers (Full)</a></li>
+                                    <li><a href="https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2023.770862/pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Artículo Frontiers (PDF)</a></li>
+                                    <li><a href="https://comunicacion-cientifica.com/wp-content/uploads/2025/12/296-PDF-Produccion-de-frutales-en-cambio-climatico.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Producción de frutales (PDF)</a></li>
+                                    <li><a href="https://iris.univpm.it/retrieve/557ebcff-0ef0-4470-8ac7-b06d1e1ff771/Makau_Higher-Education-Institutions-Italy_2024.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Makau - Higher Education (PDF)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w2', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 2 (11-15 May) | Luis</span>
+                    <h3>🌿 Problemáticas y Matriz Energética</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w2" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w2-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w2-cont" class="inner-content">
+                        1.1 Las grandes problemáticas de la agricultura mundial y la necesidad nuevo enfoque de sustentabilidad.<br>
+                        1.1.1 Cambios en la matriz energética y su impacto en la agricultura: Historia energética y modos de producción. Cambio climático y agricultura. Petróleo e insumos agropecuarios Biocombustibles y nuevas tendencias en el manejo de la biomasa.<br>
+                        1.1.2 Impactos ambientales de la agricultura bajo el modelo de producción industrial de la primera revolución verde: deforestación, contaminación por agrotóxicos, erosión, contaminación de fuentes de agua y competencia por el agua.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w2-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w2-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Exposición sobre Historia de la agricultura nacional e internacional. LUIS</li>
+                            <li>Caracterización sobre la Agricultura Industrial, sus dinámicas, objetivos y consecuencias ambientales. LUIS</li>
+                            <li>Discusión grupal sobre la necesidad de un enfoque de Sustentabilidad en la Agricultura. LUIS</li>
+                            <li>Trabajo de campo en Ánimas: 1. Conformación de camas de siembra. 2. Preparación de almácigos. 3. Siembra directa y transplante.</li>
+                            <li>Visita a parcela productores (15 de mayo): Contextualización y ubicación de parcelas agrícolas según los productores con los que se desarrollará la Investigación Modular (Equipo 1: Tlahuac, Equipo 2: Xochimilco IAX, Equipo 3: Xochimilco San Gregorio, Equipo 4: Milpa Alta La Era/Tecomitl, Equipo 5: Milpa Alta Santa Ana).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w2-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w2-eval" class="inner-content">
+                        <b>Lecturas para apoyar:</b> Maroto Borrego, J. V. (1998) Historia de la agronomía; Luiselli Fernández, C. (2017) La agricultura en México; Mena Munguía, S. (2004) Panorama de la agricultura en México.
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w2-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w2-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://catalogo.utc.edu.ec/cgi-bin/koha/opac-detail.pl?biblionumber=7784" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Maroto Borrego, J. V. (1998)</a></li>
+                                    <li><a href="https://sigloxxieditores.com.mx/libro/agricultura-y-alimentacion-en-mexico/" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Luiselli Fernández, C. (2017)</a></li>
+                                    <li><a href="https://medioambiente.ulibros.com/panorama-de-la-agricultura-en-mexico-uvxog.html" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Mena Munguía, S. (2004)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w3', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 3 (18-22 May) | Luis</span>
+                    <h3>🌽 Contexto Agrícola en México</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w3" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w3-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w3-obj" class="inner-content">Que el alumno comience a caracterizar problemáticas y retos en torno a la sustentabilidad, la agricultura en el marco mundial y nacional.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w3-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w3-cont" class="inner-content">
+                        1.2 El contexto agrícola en México y los retos para la sustentabilidad.<br>
+                        1.2.1 Potencial agrícola y principales limitantes hídricas y topográfica en la agricultura mexicana.<br>
+                        1.2.2 Regiones agrícolas y tipos de productores: los grandes polos de desarrollo agrícola y las zonas de agricultura campesina marginal.<br>
+                        1.2.3 Principales características ambientales, socioeconómicas y tecnológicas de las regiones agrícolas.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w3-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w3-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Consulta, Revisión y Análisis del Panorama Agroalimentario en México (del año más actualizado).</li>
+                            <li>Fundamentos de la agronomía y los agroecosistemas mediante casos y ejemplos reales de producción de cultivos.</li>
+                            <li>Consulta de bases de datos institucionales: INEGI, SADER, SEMARNAT FAO. Búsqueda de datos e indicadores específicos sobre producción, población y alimentación.</li>
+                            <li>Reconocimiento a partir de visualizadores digitales sobre las regiones agrícolas, topografía y biodiversidad en México.</li>
+                            <li>Trabajo de campo en Ánimas: Elaboración de abonos orgánicos y otros bioinsumos.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w3-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w3-eval" class="inner-content">
+                        <b>Entregable:</b> 2) Ensayo-Debate individual sobre agricultura, sustentabilidad, problemas y retos.<br>
+                        <b>Material:</b> Tonolli y Ferrer (2018), Torres-Lima et al. (2022). Lecturas de apoyo: Bassols Batalla (2018).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w3-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w3-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://agris.fao.org/search/en/providers/124846/records/670508e6b1dfe472e144c025" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Tonolli, A. y Ferrer, C. (2018)</a></li>
+                                    <li><a href="https://doi.org/10.1007/978-3-030-98617-9_2" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Torres-Lima et al. (2022)</a></li>
+                                    <li><a href="https://books.google.com/books/about/A_Systems_Approach_to_Agroecology.html?id=0qGf0QEACAAJ" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Bassols Batalla, Á. (2018)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w4', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 4 (25-29 May) | Pablo</span>
+                    <h3>🚜 Nueva Ruralidad y Proyectos</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w4" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w4-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w4-obj" class="inner-content">Que el alumno conceptualice la sustentabilidad aplicada a diversos ámbitos de la agricultura y de las diferentes regiones del país.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w4-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w4-cont" class="inner-content">
+                        1.2.4 Nueva ruralidad en México: características de la población, niveles de desarrollo, migración y multifuncionalidad en el medio rural, tenencia de la tierra, entre otros factores.<br>
+                        1.2.5 Proyectos de desarrollo rural y agropecuario en México: necesidad de un enfoque sistémico basado en el diagnóstico agroecológico sustentabilidad.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w4-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w4-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Búsqueda y síntesis de alternativas a la producción industrial desde las experiencias comunitarias, productivas, campesinas y de diferentes regiones reconociendo características principales.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w4-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w4-eval" class="inner-content">
+                        <b>Entregable:</b> 3) Documento de contextualización de experiencias productivas que representen una alternativa ligada a la sustentabilidad (Grupal).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w4-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w4-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://www.somas.org.mx/wp-content/uploads/2019/01/LIBRO-DIGITAL-DE-AGRICULTURA-SOSTENIBLE-2017-1.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Libro Digital Agricultura Sostenible</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w5', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 5 (1-5 Jun) | Luis</span>
+                    <h3>🕸️ Teoría de Sistemas Complejos</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w5" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w5-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w5-obj" class="inner-content">Generar modelos que caractericen el funcionamiento de unidades de producción agropecuaria a partir de la teoría de sistemas, así como poder diseñar y planear sistemas agrícolas y agropecuarios sustentables.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w5-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w5-cont" class="inner-content">
+                        2.1 Teoría de sistemas y producción agrícola.<br>
+                        2.1.1 Concepto de sistema.<br>
+                        2.1.2 Estructura, funciones y evolución de un sistema.<br>
+                        2.1.3 La finca agrícola como un agroecosistema: entradas, salidas, componentes, interacciones y límites.<br>
+                        2.1.4 Caracterización y representación de los sistemas agrícolas a través diagramas de flujo.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w5-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w5-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Análisis conceptual, metodológico y técnico de la teoría de sistemas aplicada a los sistemas agrícolas.</li>
+                            <li>a) Teoría de sistemas y producción agrícola: estructura, componentes, interacciones, limitantes y puntos críticos.</li>
+                            <li>b) Sistemas agrícolas: límites, componentes, entradas, salidas e interacciones, tipos de sistemas (agrícola, pecuario, agropecuario, agroforestal y agrosilvopastoril).</li>
+                            <li>Lectura y exposición sobre Teoría de sistemas en la Agricultura a partir de la representación de casos concretos.</li>
+                            <li>Análisis sobre la Sustentabilidad en la agricultura y Teoría de sistemas complejos. Aproximaciones a la sustentabilidad: Resiliencia ecológica, intensificación ecológica, modernidad ambiental, ecodesarrollo.</li>
+                            <li>Trabajo de campo en Ánimas: Reconocimiento de arvenses: de las “malezas” a las “buenezas”. Entendiendo la vegetación para hacer agricultura. Sistemas Agroforestales Sucesionales, huertos hortícolas diversificados e invernaderos. Prácticas y análisis de los sistemas y estrategias tecnológicas.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w5-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w5-eval" class="inner-content">
+                        <b>Entregable:</b> 4) Exposición y documento explicativos por equipos de la estructura, funcionamiento y atributos de la sustentabilidad en diferentes agroecosistemas. Incluye representación mediante un diagrama de flujo (Semanas 5 y 6).<br>
+                        <b>Material:</b> Tittonell (2023), Altieri y Nicholls (2000).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w5-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w5-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://books.google.com/books/about/A_Systems_Approach_to_Agroecology.html?id=0qGf0QEACAAJ" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Tittonell, P. (2023)</a></li>
+                                    <li><a href="http://www.unich.edu.mx/wp-content/uploads/2014/01/Altieri%20y%20Nicholls%20Agroecolog%C3%ADa_Biodiversidad.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Altieri, M. y Nicholls, C. I. (2000)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w6', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 6 (8-12 Jun) | Luis</span>
+                    <h3>🐛 Sustentabilidad y Agroecología</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w6" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w6-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w6-obj" class="inner-content">1. Generar modelos que caractericen unidades. 2. Conceptualice la agricultura y el manejo tecnológico. 3. Comprenda conceptos y enfoques metodológicos en el diagnóstico.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w6-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w6-cont" class="inner-content">
+                        2.1.5 La transformación de los ecosistemas en sistemas agrícolas, domesticación, adaptación y cambios en el flujo energético. 2.1.6 Tipos de sistemas agrícolas y principales características.<br>
+                        2.2 Desarrollo sustentable y sustentabilidad en la agricultura.<br>
+                        2.2.1 Desarrollo sustentable: concepto, historia y enfoques.<br>
+                        2.2.2 Características de las tres áreas de la sustentabilidad: ambiental, económica y social.<br>
+                        2.2.3 Atributos de la sustentabilidad: equidad, estabilidad, resiliencia, confiablidad, autogestión y productividad.<br>
+                        2.2.4 Los principales enfoques de la sustentabilidad en la agricultura: Agroecología, intensificación sustentable, Agricultura climáticamente inteligente.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w6-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w6-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Investigación documental sobre el manejo tecnológico de los cultivos bajo el marco de sistemas agrícolas.</li>
+                            <li>a) Transformación de los ecosistemas en sistemas agrícolas: domesticación, adaptación y cambios.</li>
+                            <li>b) Desarrollo sustentable y sustentabilidad en la agricultura.</li>
+                            <li>c) Indicadores de sustentabilidad agrícola y desarrollo regional.</li>
+                            <li>d) Temas transversales contemporáneos (resiliencia, Soluciones basadas en la naturaleza, etc).</li>
+                            <li>Evaluación rural rápida de sistemas agrícolas del contexto regional.</li>
+                            <li>Trabajo de campo en Ánimas: Diseño y establecimiento de árboles en sistema Agroforestal. Establecimiento de maíz y sistema agroforestal a partir de islas de fertilidad.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w6-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w6-eval" class="inner-content">
+                        <b>Bibliografía de apoyo:</b> Tittonel O. (2013), Gerritsen, P (2010), Sevilla-Guzmán y Woodgate (1997).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w6-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w6-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://books.google.com/books/about/A_Systems_Approach_to_Agroecology.html?id=0qGf0QEACAAJ" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Tittonel O. (2013)</a></li>
+                                    <li><a href="https://rraae.cedia.edu.ec/vufind/Record/FLACSO_240549c5ac6a679cbc8f825dce4eb793/Description?sid=3227263" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Gerritsen, P. (2010)</a></li>
+                                    <li><a href="https://books.google.com/books/about/A_Systems_Approach_to_Agroecology.html?id=0qGf0QEACAAJ" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Sevilla-Guzmán y Woodgate (1997)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w7', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 7 (15-19 Jun) | Pablo</span>
+                    <h3>📊 Indicadores y Diagnóstico MESMIS</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w7" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w7-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w7-obj" class="inner-content">Comprender los conceptos y enfoques metodológicos en el diagnóstico y manejar herramientas para el diagnóstico participativo.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w7-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w7-cont" class="inner-content">
+                        2.3.1 Diagnóstico agroecológico: objetivos, niveles y estructura.<br>
+                        2.3.2 Características de un buen indicador.<br>
+                        2.3.3 Criterios para la selección y construcción de indicadores a partir de los atributos de la sustentabilidad.<br>
+                        2.3.4 Indicadores de productividad, estabilidad, autogestión y equidad.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w7-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w7-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Estudio conceptual, metodológico y aplicado sobre los métodos para evaluar la sustentabilidad de un sistema agrícola (SAFA, MESMIS; INSPIA; PER, IDH, SIRIUS, RISE, SAFE, AMP, DEA, Fuzzy Logic, AHP, PLLA, SFP, OASIS).</li>
+                            <li>Lectura para técnicos sobre principios, metodología y construcción de indicadores del MESMIS para la elaboración de un primer ejercicio.</li>
+                            <li>Caracterización y Análisis sobre un sistema agrícola tradicional y su relación con la sustentabilidad.</li>
+                            <li>Recuperación y elaboración del Ciclo de producción en una parcela – herramienta en campo.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                            <li>Trabajo de campo en Ánimas: Identificación deficiencias de nutrientes, plagas y enfermedades. Calidad y salud del suelo. Luis (viernes).</li>
+                            <li>Revisión de la representación de un sistema agrícola mediante un diagrama de flujo de la quinta semana.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w7-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w7-eval" class="inner-content">
+                        <b>Entregable:</b> 5) Presentaciones artículos (resumen en word y powerpoint) (Individual).<br>
+                        <b>Material:</b> Speelman, E., et al. (2007), Rodríguez Sánchez, L. M. (2018).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w7-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w7-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="http://agroecology.pbworks.com/f/MESMIS.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Speelman, E., et al. (2007)</a></li>
+                                    <li><a href="https://www.somas.org.mx/wp-content/uploads/2019/01/LIBRO-DIGITAL-DE-AGRICULTURA-SOSTENIBLE-2017-1.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Rodríguez Sánchez, L. M. (2018)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w8', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 8 (22-26 Jun) | Pablo</span>
+                    <h3>🍅 Huerto de Traspatio y Análisis Integrativo</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w8" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w8-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w8-obj" class="inner-content">Manejar herramientas para el diagnóstico participativo y aplicar herramientas de análisis integrativo.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w8-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w8-cont" class="inner-content">
+                        2.4 El huerto de traspatio como agroecosistema y su relación con la sustentabilidad.<br>
+                        2.4.1 Análisis del huerto, sus componentes, funciones y cambios en el tiempo desde la perspectiva sistémica.<br>
+                        2.4.2 Identificación de flujos de capital dentro del huerto: dinero, nutrientes, fuerza de trabajo, combustible y agua.<br>
+                        2.4.3 Utilización de algunos atributos de la sustentabilidad para diagnosticar el estado del huerto como agroecosistema.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w8-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w8-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Herramientas de análisis para el diagnóstico rural participativo: La parcela agrícola como un agroecosistema: interacciones, flujos de energía, sistemas socioambientales y escala de paisaje.</li>
+                            <li>Árboles de problemas y de soluciones, Mapas y transectos, Mapas de causalidad, Diagramas de finca.</li>
+                            <li>Calendario de producción y actividades socioeconómicas, Presupuestos de cultivo, Diagramas entre actores sociales. Diseño de cuestionarios para encuestas y entrevistas.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                            <li>Definición de la aplicación en campo para el proyecto de investigación de al menos dos métodos y herramientas seleccionadas para evaluar la sustentabilidad. Revisión y corrección de herramientas para su aplicación.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w8-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w8-eval" class="inner-content">
+                        <b>Entregable:</b> 6) Presentaciones temáticas A (Equipos).<br>
+                        <b>Material:</b> Torres, P., et al. (2019), Altieri, M. A., & Nicholls, C. I. (2013).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w8-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w8-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S2007-09342024000600108&tlng=es" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Ejemplo artículo sobre sustentabilidad</a></li>
+                                    <li><a href="https://economia.unam.mx/publicaciones/econinforma/pdfs/350/01escalante.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Torres, P., et al. (2019)</a></li>
+                                    <li><a href="https://bibliotecadigital.ciren.cl/items/ed7fa1c0-a1fd-4993-a59a-5580987113ee" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Altieri, M. A., & Nicholls, C. I. (2013)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w9', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 9 (29 Jun-3 Jul) | Luis</span>
+                    <h3>📍 Viaje de Estudios a Oaxaca </h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w9" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w9-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w9-obj" class="inner-content">Aplique las herramientas de diagnóstico participativo en los sistemas agrícolas con individuos o grupos de agricultores en comunidad.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w9-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w9-cont" class="inner-content">
+                        3.1.3 Marco de políticas públicas que influyen sobre la disponibilidad de los capitales y las estrategias de manejo.<br>
+                        3.1.4 Construcción cualitativa de tipologías de unidades de producción en función de sus modos de vida.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w9-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w9-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li><b>Viaje de estudios a Oaxaca:</b> 1. Recorrido de campo para identificación del paisaje agroecológico. 2. Práctica de reforestación y siembra campesina de maíz. 3. Práctica de caracterización socioeconómica y tecnológica de unidades de producción campesina en San Jerónimo Otla y La Villa de Etla, Estado de Oaxaca.</li>
+                            <li>Unidad socioeconómica campesina - Definiciones de campesino y situación actual del campesinado.</li>
+                            <li>Mapeo de actores como herramienta de diagnóstico. Principios de Investigación-acción como metodología de trabajo. Resolver problemáticas concretas.</li>
+                            <li>Métodos histórico-culturales para el análisis de trayectorias. Historias de vida comunitarias e historias de parcela.</li>
+                            <li>Identificación y aplicación de diversas estrategias de reporte y sistematización de información generada por la aplicación de herramientas de caracterización y diagnóstico rural colaborativo.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w9-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w9-eval" class="inner-content">
+                        <b>Entregable:</b> 7) Informe por equipo del diagnóstico a unidades de producción realizado en el viaje de estudios a Oaxaca.<br>
+                        <b>Material:</b> Douwe van der Ploeg, J. (2015), Osorio, F. E. (2014), Xolocotzi, E. (1997).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w9-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w9-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://icariaeditorial.com/perspectivas-agroecologicas/4529-el-campesinado-y-el-arte-de-la-agricultura-un-manifiesto-chayanovia.html" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Douwe van der Ploeg, J. (2015) - Icaria</a></li>
+                                    <li><a href="https://maporrua.com.mx/product/campesinado-y-el-arte-de-la-agricultura-el/" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Douwe van der Ploeg, J. (2015) - Maporrúa</a></li>
+                                    <li><a href="https://redibec.org/ojs/index.php/revibec/article/view/609" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Osorio, F. E., & Acevedo Osorio, Á. (2014)</a></li>
+                                    <li><a href="https://www.madrimasd.org/blogs/universo/2010/02/03/135161" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Xolocotzi, E. (1997)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w10', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 10 (6-10 Jul) | Pablo</span>
+                    <h3>🌾 Modos de Vida y Análisis Multivariado</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w10" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w10-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w10-obj" class="inner-content">Analice las herramientas de caracterización y diagnóstico rural colaborativo y participativo de los sistemas agrícolas.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w10-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w10-cont" class="inner-content">
+                        3.1.2 Estrategias de manejo y su representación como flujos de capital.<br>
+                        3.1.5 Manejo de algún software para hacer análisis multivariado.<br>
+                        3.2.1 Árbol de problemas para el diagnóstico agroecológico de unidades de producción.<br>
+                        3.2.2 Historias de vida para el análisis de las trayectorias de las unidades de producción.<br>
+                        3.2.3 Líneas del tiempo de la agricultura predial, zonal o regional.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w10-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w10-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Modos de vida: Metodología de aproximación y abordaje de las unidades de producción.</li>
+                            <li>Herramientas de análisis para el diagnóstico rural participativo: La parcela agrícola como un agroecosistema, Árboles de problemas y de soluciones, Mapas y transectos, Mapas de causalidad, Diagramas de finca.</li>
+                            <li>Calendario de producción y actividades socioeconómicas, Presupuestos de cultivo, Diagramas entre actores sociales. Diseño de cuestionarios para encuestas y entrevistas.</li>
+                            <li>Visita a parcela productores (jueves).</li>
+                            <li>Revisión y corrección de al menos dos métodos y herramientas seleccionadas para evaluar la sustentabilidad de un sistema agrícola.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w10-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w10-eval" class="inner-content">
+                        <b>Entregables:</b> 8) Presentaciones temáticas B (Equipos), 9) Bitacora por equipo de trabajo de campo en Ánimas.<br>
+                        <b>Material:</b> Barboza de la Sierra, A. (2014), Méndez, V. E. (2010).
+                        
+                        <div class="inner-accordion" style="margin-top: 15px; border-color: #d1e7dd;">
+                            <div class="inner-header" style="background: #e8f4ec; font-size: 0.9em;" onclick="toggleInner(event, 'w10-refs', this)">
+                                🔗 Enlaces de Referencias <span class="arrow">▼</span>
+                            </div>
+                            <div id="w10-refs" class="inner-content">
+                                <ul class="full-text-list" style="word-break: break-all; margin-top: 10px;">
+                                    <li><a href="https://www.academia.edu/7779068/Aplicaci%C3%B3n_del_m%C3%A9todo_multicriterio_para_valorar_la_sustentabilidad_de_diferentes_alt..." target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Barboza de la Sierra, A. (2014)</a></li>
+                                    <li><a href="http://agroecology.pbworks.com/f/MESMIS.pdf" target="_blank" style="color: var(--secondary); font-weight: bold; text-decoration: none;">Méndez, V. E. (2010)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w11', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 11 (13-17 Jul) | Pablo</span>
+                    <h3>📋 Gestión Estadística y Sistematización</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w11" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w11-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w11-obj" class="inner-content">Analice los procesos de sistematización de información generada por la aplicación de herramientas de caracterización y diagnóstico.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w11-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w11-cont" class="inner-content">
+                        3.4 Gestión y análisis descriptivo de información estadística.<br>
+                        3.4.1 Consulta de bases de datos institucionales.<br>
+                        3.4.2 Análisis de estadísticas nacionales de tipo económico y ambiental del sector rural.<br>
+                        3.4.3 Establecimiento de valores de referencia para indicadores.<br>
+                        3.4.4 Ponderación y normalización de indicadores.<br>
+                        3.4.5 Uso de gráficas radiales para caracterizar estados de la sustentabilidad.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w11-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w11-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Identificación y aplicación de diversas estrategias de reporte y sistematización de información generada (análisis de estadística descriptiva, tablas, gráficas y figuras).</li>
+                            <li>Identificación de sus components, interacciones, limitantes y puntos críticos.</li>
+                            <li>Presentación y discusión de resultados del trabajo de Investigación Modular con la implementación coordinada de las herramientas vistas en el módulo.</li>
+                            <li>A) Elaboración de cartel científico.</li>
+                            <li>B) Gestión, sistematización y análisis de información respecto al estudio.</li>
+                            <li>C) Presentación de resultados y trabajo de Investigación Modular.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w11-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w11-eval" class="inner-content">
+                        Preparación integral previa al cierre del trimestre y revisión del cartel científico.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card collapsible-card" onclick="toggleCollapse('w12', this)">
+            <div class="week-header">
+                <div>
+                    <span class="week-badge">Semana 12 (20-24 Jul) | Pablo/Luis</span>
+                    <h3>🚀 Cierre y Expo Agro 🌿</h3>
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div id="w12" class="collapsible-content">
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w12-obj', this)">🎯 Objetivos Específicos <span class="arrow">▼</span></div>
+                    <div id="w12-obj" class="inner-content">Integre los resultados, evalúe la situación de su investigación, comunique sus resultados y evalúe el proceso de enseñanza aprendizaje.</div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w12-cont', this)">📖 Contenidos Sintéticos <span class="arrow">▼</span></div>
+                    <div id="w12-cont" class="inner-content">
+                        Integración de análisis y métodos en el diagnóstico de sistemas agrícolas y conclusión sobre las dimensiones de sustentabilidad integrando las herramientas utilizadas.
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w12-act', this)">🛠️ Actividades Temáticas <span class="arrow">▼</span></div>
+                    <div id="w12-act" class="inner-content">
+                        <ul class="full-text-list">
+                            <li>Integración y presentación del reporte de investigación y cartel/modalidad.</li>
+                            <li>Sesión de retroalimentación modular.</li>
+                            <li>Discutir sobre el perfil y visión de los sistemas y estrategias tecnológicas, económicas y socioambientales dentro del medio rural (agroecología, agricultura climáticamente inteligente, etc).</li>
+                            <li><b>Expo Agro UAM 20 de julio</b></li>
+                            <li>A) Evaluación del proceso enseñanza-aprendizaje.</li>
+                            <li>B) Autoevaluación.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="inner-accordion">
+                    <div class="inner-header" onclick="toggleInner(event, 'w12-eval', this)">📋 Evaluación y Material <span class="arrow">▼</span></div>
+                    <div id="w12-eval" class="inner-content">
+                        <b>Entregables:</b> 12) Exposición de carteles, 13) Presentaciones de investigación y cierre del módulo (Grupal).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="evaluacion" class="tab-content">
+        <div class="card">
+            <h3>Puntos Críticos de Calificación</h3>
+            <p>Suma total de esfuerzos:</p>
+            
+            <span>Producción Académica (37%)</span>
+            <div class="progress-container"><div class="progress-bar" style="width: 37%"></div></div>
+            
+            <span>Investigación Modular (30%)</span>
+            <div class="progress-container"><div class="progress-bar" style="width: 30%"></div></div>
+            
+            <span>Prácticas de Campo (20%)</span>
+            <div class="progress-container"><div class="progress-bar" style="width: 20%"></div></div>
+            
+            <span>Presentación Final (10%)</span>
+            <div class="progress-container"><div class="progress-bar" style="width: 10%"></div></div>
+
+            <span>Participación (3%)</span>
+            <div class="progress-container"><div class="progress-bar" style="width: 3%"></div></div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">📋 Modalidades de Evaluación (Desglose)</h3>
+
+            <div class="eval-accordion collapsible-card" onclick="toggleCollapse('ev1', this)">
+                <div class="week-header">
+                    <div>
+                        <span class="week-badge">37%</span>
+                        <h4 style="margin:0;">Producción académica escrita</h4>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div id="ev1" class="collapsible-content">
+                    <ul class="task-list">
+                        <li><span class="percentage-badge">2%</span> <span><b>Reporte de opinión:</b> Sem 1 - PABLO</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Ensayo-Debate:</b> Sem 3 - LUIS</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Documento de contextualización:</b> Sem 4 - PABLO</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Exposición de atributos:</b> Sem 5 y 6 - LUIS</span></li>
+                        <li><span class="percentage-badge">10%</span> <span><b>Presentación de artículos:</b> Sem 7 - PABLO</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Presentación temática A:</b> Sem 8 - PABLO</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Presentación temática B:</b> Sem 10 - PABLO</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="eval-accordion collapsible-card" onclick="toggleCollapse('ev2', this)">
+                <div class="week-header">
+                    <div>
+                        <span class="week-badge">20%</span>
+                        <h4 style="margin:0;">Prácticas de campo</h4>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div id="ev2" class="collapsible-content">
+                    <ul class="task-list">
+                        <li><span class="percentage-badge">10%</span> <span><b>Informe diagnóstico (Oaxaca):</b> Sem 9 - LUIS</span></li>
+                        <li><span class="percentage-badge">10%</span> <span><b>Bitácora Las Ánimas:</b> LUIS</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="eval-accordion collapsible-card" onclick="toggleCollapse('ev3', this)">
+                <div class="week-header">
+                    <div>
+                        <span class="week-badge">3%</span>
+                        <h4 style="margin:0;">Participación en clase</h4>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div id="ev3" class="collapsible-content">
+                    <ul class="task-list">
+                        <li><span class="percentage-badge">3%</span> <span><b>Autoevaluación en campo:</b> LUIS</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="eval-accordion collapsible-card" onclick="toggleCollapse('ev4', this)">
+                <div class="week-header">
+                    <div>
+                        <span class="week-badge">30%</span>
+                        <h4 style="margin:0;">Investigación modular</h4>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div id="ev4" class="collapsible-content">
+                    <ul class="task-list">
+                        <li><span class="percentage-badge">30%</span> <span><b>Reporte escrito:</b> PABLO</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="eval-accordion collapsible-card" onclick="toggleCollapse('ev5', this)">
+                <div class="week-header">
+                    <div>
+                        <span class="week-badge">10%</span>
+                        <h4 style="margin:0;">Presentación Final</h4>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div id="ev5" class="collapsible-content">
+                    <ul class="task-list">
+                        <li><span class="percentage-badge">5%</span> <span><b>Cartel:</b> PABLO</span></li>
+                        <li><span class="percentage-badge">5%</span> <span><b>Presentación oral:</b> PABLO</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="investigacion" class="tab-content">
+        <div class="info-box">
+            <b>⚠️ Criterios de Calificación Final:</b><br>
+            • <b>S (60-75):</b> Conocimientos básicos de teoría y sistema.<br>
+            • <b>B (76-89):</b> Aplicación detallada de metodologías y técnicas de recolección.<br>
+            • <b>MB (90-100):</b> Análisis detallado y propuestas de alternativas socioeconómicas.
+        </div>
+
+        <div class="card">
+            <h3>📄 Estructura del Reporte Escrito</h3>
+            <ol class="numbered-list">
+                <li>Introducción</li>
+                <li>Metodología</li>
+                <li>Marco conceptual</li>
+                <li>Marco de referencia</li>
+                <li>Análisis y Discusión</li>
+                <li>Interpretación</li>
+                <li>Apoyo visual (Cuadros/Gráficas)</li>
+                <li>Recomendaciones</li>
+                <li>Conclusiones</li>
+                <li>Referencias (Citas rigurosas)</li>
+                <li>Anexos</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h3>🗣️ Reglas para Exposiciones</h3>
+            <ul class="task-list" style="font-size: 0.9em;">
+                <li>💻 PowerPoint con estructura formal.</li>
+                <li>⏱️ Mínimo 30 minutos de duración.</li>
+                <li>🌐 5 referencias en inglés (2016+) por integrante.</li>
+                <li>🕹️ Dinámica grupal + Kahoot obligatorios.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="objetivos" class="tab-content">
+        <div class="card">
+            <h3>Objeto de Transformación</h3>
+            <p>Sustentabilidad de los sistemas agrícolas.</p>
+            <hr>
+            <h3>Objetivo General</h3>
+            <p>Comprender el funcionamiento y problemáticas de los sistemas agrícolas mediante metodologías de caracterización y diagnóstico agroecológico.</p>
+        </div>
+        <div class="card">
+            <h3>Atributos a Evaluar</h3>
+            <p>Equidad, Estabilidad, Resiliencia, Confiabilidad, Autogestión y Productividad.</p>
+        </div>
+
+        <div class="card" style="border: 2px solid var(--accent); background-color: #fdfdfd;">
+            <h3 style="color: var(--primary);">🔒 Meta Secreta</h3>
+            <div id="password-section">
+                <p style="font-size: 0.9em; margin-bottom: 10px;">Ingresa la clave para desbloquear esta meta:</p>
+                <input type="password" id="secret-password" placeholder="Contraseña" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; outline: none; margin-right: 5px;">
+                <button onclick="checkPassword()" style="padding: 8px 15px; background-color: var(--secondary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Desbloquear</button>
+                <p id="error-msg" style="color: red; font-size: 0.8em; margin-top: 5px; display: none;">Contraseña incorrecta</p>
+            </div>
+            <div id="secret-content" style="display: none; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--secondary);">
+                <p style="font-size: 1.05em; line-height: 1.6; color: #444; font-style: italic;">
+                    Mi mayor meta en la vida es poder verte cumplir todos tus sueños. Me siento muy orgulloso de ti, de todo lo que eres y lo que haces. Juntos llegaremos muy lejos. <br><br>
+                    <strong>Te amo con toda mi alma y corazón. ❤️✨️</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="dogs-footer">
+    <p>Hecho con ❤️ para la mejor Agrónoma</p>
+</div>
+
+<script>
+    function openTab(tabName) {
+        let i, content, tabs;
+        content = document.getElementsByClassName("tab-content");
+        for (i = 0; i < content.length; i++) {
+            content[i].style.display = "none";
+            content[i].classList.remove("active");
+        }
+        tabs = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove("active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        document.getElementById(tabName).classList.add("active");
+        event.currentTarget.classList.add("active");
+    }
+
+    // Despliegue de tarjetas principales (Semanas)
+    function toggleCollapse(id, card) {
+        const content = document.getElementById(id);
+        const arrow = card.querySelector('.week-header .arrow');
+        
+        content.classList.toggle('open');
+        if (arrow) arrow.classList.toggle('rotated');
+    }
+
+    // Despliegue de sub-ventanas sin cerrar la principal
+    function toggleInner(event, id, headerElement) {
+        event.stopPropagation();
+        const content = document.getElementById(id);
+        const arrow = headerElement.querySelector('.arrow');
+        
+        content.classList.toggle('open');
+        if (arrow) arrow.classList.toggle('rotated');
+    }
+
+    // FUNCIÓN AGREGADA PARA LA CONTRASEÑA
+    function checkPassword() {
+        const input = document.getElementById('secret-password').value;
+        const errorMsg = document.getElementById('error-msg');
+        const secretContent = document.getElementById('secret-content');
+        const passwordSection = document.getElementById('password-section');
+
+        if (input === '310522') {
+            errorMsg.style.display = 'none';
+            passwordSection.style.display = 'none';
+            secretContent.style.display = 'block';
+        } else {
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    // REGISTRO DEL SERVICE WORKER (Para la PWA)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then((reg) => {
+                console.log('Service worker registrado.', reg);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>

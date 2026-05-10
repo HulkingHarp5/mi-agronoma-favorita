@@ -1,6 +1,6 @@
 {
-  "name": "SSA Fer",
-  "short_name": "SSA Fer",
+  "name": "Mi agrónoma favorita",
+  "short_name": "Agenda Fertzi",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fcf9",
@@ -9,12 +9,14 @@
     {
       "src": "1000373006.jpg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     },
     {
       "src": "1000373006.jpg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     }
   ]
 }
